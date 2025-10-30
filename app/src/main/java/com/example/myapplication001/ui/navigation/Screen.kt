@@ -21,7 +21,9 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector?
     object GalleryDetail : Screen("gallery_detail/{photoId}", "Detalle de Foto", null) {
         fun createRoute(photoId: String) = "gallery_detail/$photoId"
     }
-    object ActiveTour : Screen("active_tour", "Recorrido Activo", null)
+    object ActiveTour : Screen("active_tour/{museumId}", "Recorrido Activo", null) {
+        fun createRoute(museumId: String) = "active_tour/$museumId"
+    }
 }
 
 val bottomNavigationItems = listOf(

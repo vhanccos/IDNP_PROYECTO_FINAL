@@ -18,19 +18,19 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.myapplication001.domain.model.ActiveTourZone
+import com.example.myapplication001.domain.model.Museum
 import com.example.myapplication001.ui.components.AppBottomNavigation
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActiveTourScreen(navController: NavController) {
-    val zone = ActiveTourZone.sample
+fun ActiveTourScreen(navController: NavController, museumId: String?) {
+    val museum = Museum.sampleData.find { it.id == museumId } ?: return
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Recorrido en: Santa Catalina") },
+                title = { Text("Recorrido en: ${museum.name}") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
@@ -43,7 +43,7 @@ fun ActiveTourScreen(navController: NavController) {
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current).data(zone.imageUrl).crossfade(true).build(),
+                model = ImageRequest.Builder(LocalContext.current).data(museum.imageUrl).crossfade(true).build(),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -58,8 +58,8 @@ fun ActiveTourScreen(navController: NavController) {
                     colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.6f))
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text(zone.funFactTitle, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text(zone.funFactText, color = Color.White)
+                        Text(museum.funFactTitle, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(museum.funFactText, color = Color.White)
                     }
                 }
 
@@ -70,7 +70,7 @@ fun ActiveTourScreen(navController: NavController) {
                         .padding(12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Te encuentras en: ${zone.name}", color = Color.White)
+                    Text("Te encuentras en: ${museum.name}", color = Color.White)
                 }
             }
         }
@@ -81,6 +81,6 @@ fun ActiveTourScreen(navController: NavController) {
 @Composable
 fun ActiveTourScreenPreview() {
     MyApplicationTheme {
-        ActiveTourScreen(rememberNavController())
+        ActiveTourScreen(rememberNavController(), museumId = "1")
     }
 }

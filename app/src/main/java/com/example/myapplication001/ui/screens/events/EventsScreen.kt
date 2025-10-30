@@ -68,6 +68,8 @@ fun EventCard(event: Event) {
                     Spacer(Modifier.width(4.dp))
                     Text(event.location, style = MaterialTheme.typography.bodyMedium)
                 }
+                Spacer(Modifier.height(4.dp))
+                Text("Tipo: ${event.type}", style = MaterialTheme.typography.bodySmall)
             }
         }
     }

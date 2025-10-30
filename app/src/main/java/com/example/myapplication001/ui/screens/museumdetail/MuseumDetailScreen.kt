@@ -87,7 +87,7 @@ fun MuseumDetailScreen(navController: NavController, museumId: String?) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                Button(onClick = { navController.navigate(Screen.ActiveTour.route) }) {
+                Button(onClick = { navController.navigate(Screen.ActiveTour.createRoute(museum.id)) }) {
                     Text("Iniciar Recorrido")
                 }
                 RatingDisplay(value = museum.ratingValue, count = museum.ratingCount)

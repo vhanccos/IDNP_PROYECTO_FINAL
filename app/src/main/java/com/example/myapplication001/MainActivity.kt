@@ -87,8 +87,14 @@ fun AppNavigation() {
                 photoId = backStackEntry.arguments?.getString("photoId")
             )
         }
-        composable(Screen.ActiveTour.route) {
-            ActiveTourScreen(navController = navController)
+        composable(
+            route = Screen.ActiveTour.route,
+            arguments = listOf(navArgument("museumId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            ActiveTourScreen(
+                navController = navController,
+                museumId = backStackEntry.arguments?.getString("museumId")
+            )
         }
     }
 }
