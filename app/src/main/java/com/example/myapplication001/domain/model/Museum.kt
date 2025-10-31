@@ -27,7 +27,7 @@ data class Museum(
             Museum(
                 id = "2",
                 name = "Museo Santuarios Andinos",
-                imageUrl = "https://static.vecteezy.com/system/resources/previews/020/936/424/non_2x/wireframe-icon-for-your-website-design-logo-app-ui-free-vector.jpg",
+                imageUrl = "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSyQtsPQE8thtVtQ1AkHPXgRPC4b5VAYOc13UYJ9i9-nmgpT0kMeuZhP2yPaxFgrcjVCmtAUiGq7bxH2YMSNYLfDPQ_CdRMWeblQpyUj6upFbZuIhks-ZY3E1l2Xy9cxUWbXc3WWDQ=w270-h312-n-k-no",
                 infoText = "Horario - Cerrado",
                 ratingValue = 4.8f,
                 ratingCount = 1234,

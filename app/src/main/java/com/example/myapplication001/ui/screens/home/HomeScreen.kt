@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.myapplication001.ui.components.AppBottomNavigation
 import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.navigation.Screen
@@ -61,6 +62,15 @@ fun HomeScreen(navController: NavController) {
             )
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            AsyncImage(
+                model = "https://elcomercio.pe/resizer/qawe4AeUojGKnCAXmBURwQQN_IY=/1200x900/smart/filters:format(jpeg):quality(75)/arc-anglerfish-arc2-prod-elcomercio.s3.amazonaws.com/public/KSE6X4SNCVFG3JO6NRSM3IZECQ.jpg",
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp) 
+                    .padding(horizontal = 16.dp)
+            )
 
             // ===== Texto guía y botón =====
             Column(
