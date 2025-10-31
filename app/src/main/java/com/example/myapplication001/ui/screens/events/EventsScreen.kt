@@ -27,7 +27,7 @@ fun EventsScreen(navController: NavController) {
     var showNotificationCard by remember { mutableStateOf(true) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { CommonHeader(subtitle = "EVENTOS Y NOTIFICACIONES") }) },
+    topBar = { TopAppBar(title = { CommonHeader(subtitle = "EVENTOS Y NOTIFICACIONES") }) },
         bottomBar = { AppBottomNavigation(navController = navController) }
     ) { paddingValues ->
         LazyColumn(

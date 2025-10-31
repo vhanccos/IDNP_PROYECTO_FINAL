@@ -1,5 +1,6 @@
 package com.example.myapplication001.ui.screens.trip_gallery
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -52,7 +53,9 @@ fun TripGalleryScreen(navController: NavController, tripName: String?) {
     ) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            modifier = Modifier.padding(it).fillMaxSize(),
+            modifier = Modifier
+                .padding(it)
+                .fillMaxSize(),
             contentPadding = PaddingValues(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -70,7 +73,9 @@ fun TripGalleryScreen(navController: NavController, tripName: String?) {
 @Composable
 fun PhotoCard(photo: Photo, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.aspectRatio(1f).clickable(onClick = onClick),
+        modifier = Modifier
+            .aspectRatio(1f)
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Box {
@@ -90,11 +95,27 @@ fun PhotoCard(photo: Photo, onClick: () -> Unit) {
                         )
                     )
             )
-            Text(
-                text = photo.timestamp,
-                color = Color.White,
-                modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
-            )
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = photo.timestamp,
+                    color = Color.White,
+                    modifier = Modifier
+                        .padding(8.dp)
+                )
+                photo.timeHourStamp?.let {
+                    Text(
+                        text = it,
+                        color = Color.White,
+                        modifier = Modifier
+                            .padding(8.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -103,6 +124,6 @@ fun PhotoCard(photo: Photo, onClick: () -> Unit) {
 @Composable
 fun TripGalleryScreenPreview() {
     MyApplicationTheme {
-        TripGalleryScreen(rememberNavController(), "Santa Catalina")
+        TripGalleryScreen(rememberNavController(), "Monasterio de Santa Catalina")
     }
 }
