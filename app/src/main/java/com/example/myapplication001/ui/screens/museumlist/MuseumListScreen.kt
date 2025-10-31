@@ -1,6 +1,7 @@
 package com.example.myapplication001.ui.screens.museumlist
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +36,7 @@ fun MuseumListScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { CommonHeader(subtitle = "Lista de Museos: Arequipa") },
+                title = { CommonHeader() },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
@@ -52,16 +54,19 @@ fun MuseumListScreen(navController: NavController) {
             }
         }
     ) { paddingValues ->
-        LazyColumn(
-            contentPadding = paddingValues,
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            items(Museum.sampleData) { museum ->
-                MuseumListItem(museum = museum, onClick = {
-                    navController.navigate(Screen.MuseumDetail.createRoute(museum.id))
-                })
+        Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            Text(text = "Lista de Museos proximos en : ", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Text(text = "Arequipa", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), style = MaterialTheme.typography.headlineSmall, color = Color.Blue)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                items(Museum.sampleData) { museum ->
+                    MuseumListItem(museum = museum, onClick = {
+                        navController.navigate(Screen.MuseumDetail.createRoute(museum.id))
+                    })
+                }
             }
         }
     }

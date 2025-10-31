@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CommonHeader(
-    subtitle: String,
+    subtitle: String? = null,
     titleColor: Color = Color.Unspecified,
     subtitleColor: Color = Color.Unspecified
 ) {
@@ -32,12 +32,16 @@ fun CommonHeader(
             textAlign = TextAlign.Center,
             color = titleColor
         )
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.titleSmall,
-            textAlign = TextAlign.Center,
-            color = subtitleColor
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        if (!subtitle.isNullOrEmpty()) {
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.titleSmall,
+                textAlign = TextAlign.Center,
+                color = subtitleColor
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
     }
 }

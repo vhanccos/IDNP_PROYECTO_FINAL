@@ -4,14 +4,15 @@ data class Photo(
     val id: String,
     val tripName: String,
     val imageUrl: String,
-    val timestamp: String
+    val timestamp: String,
+    val timeHourStamp: String? = null
 ) {
     companion object {
         val sampleData = listOf(
             // Monasterio de Santa Catalina
-            Photo("1", "Monasterio de Santa Catalina", "https://www.peru.travel/Contenido/General/Imagen/es/564/1.1/santa-catalina.jpg", "28 Nov, 10:30"),
-            Photo("2", "Monasterio de Santa Catalina", "https://www.peru.travel/Contenido/Atractivo/Imagen/es/44/1.1/Principal/monasterio-santa-catalina.jpg", "28 Nov, 11:00"),
-            Photo("3", "Monasterio de Santa Catalina", "https://blog.redbus.pe/wp-content/uploads/2020/03/117b8eaa1deb4d93d3d5c857585ed6ea.jpg", "28 Nov, 11:30"),
+            Photo("1", "Monasterio de Santa Catalina", "https://www.peru.travel/Contenido/General/Imagen/es/564/1.1/santa-catalina.jpg", "28 Nov", "10:30"),
+            Photo("2", "Monasterio de Santa Catalina", "https://www.peru.travel/Contenido/Atractivo/Imagen/es/44/1.1/Principal/monasterio-santa-catalina.jpg", "28 Nov", "11:00"),
+            Photo("3", "Monasterio de Santa Catalina", "https://blog.redbus.pe/wp-content/uploads/2020/03/117b8eaa1deb4d93d3d5c857585ed6ea.jpg", "28 Nov", "11:30"),
 
             // Mirador de Yanahuara
             Photo("4", "Mirador de Yanahuara", "https://www.peru.travel/Contenido/Atractivo/Imagen/es/42/1.1/Principal/mirador-yanahuara.jpg", "29 Nov, 09:00"),

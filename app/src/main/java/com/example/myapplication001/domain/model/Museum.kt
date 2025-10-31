@@ -16,7 +16,7 @@ data class Museum(
             Museum(
                 id = "1",
                 name = "Museo de Arte Virreinal Santa Teresa",
-                imageUrl = "https://static.vecteezy.com/system/resources/previews/020/936/424/non_2x/wireframe-icon-for-your-website-design-logo-app-ui-free-vector.jpg",
+                imageUrl = "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0b/69/f6/04/1.jpg",
                 infoText = "Horario - Abierto",
                 ratingValue = 4.5f,
                 ratingCount = 574,
