@@ -20,6 +20,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myapplication001.domain.model.Trip
 import com.example.myapplication001.ui.components.AppBottomNavigation
+import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.navigation.Screen
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
@@ -27,7 +28,7 @@ import com.example.myapplication001.ui.theme.MyApplicationTheme
 @Composable
 fun TripListScreen(navController: NavController) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Mis Aventuras") }) },
+        topBar = { TopAppBar(title = { CommonHeader(subtitle = "Mis Aventuras") }) },
         bottomBar = { AppBottomNavigation(navController = navController) }
     ) {
         LazyVerticalGrid(

@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myapplication001.domain.model.Photo
 import com.example.myapplication001.ui.components.AppBottomNavigation
+import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +33,7 @@ fun GalleryDetailScreen(navController: NavController, photoId: String?) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("PERUSTEAR") },
+                title = { CommonHeader(subtitle = "Detalle de Foto") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
@@ -55,6 +57,9 @@ fun GalleryDetailScreen(navController: NavController, photoId: String?) {
                 Row(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Default.Download, contentDescription = "Descargar")
+                    }
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(Icons.Default.Share, contentDescription = "Compartir")
                     }
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.GridView, contentDescription = "Vista de Galería")

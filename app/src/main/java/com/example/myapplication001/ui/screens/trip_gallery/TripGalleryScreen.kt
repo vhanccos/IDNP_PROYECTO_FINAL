@@ -25,6 +25,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myapplication001.domain.model.Photo
 import com.example.myapplication001.ui.components.AppBottomNavigation
+import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.navigation.Screen
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
@@ -34,7 +35,7 @@ fun TripGalleryScreen(navController: NavController, tripName: String?) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Aventuras en: ${tripName ?: "Lugar"}") },
+                title = { CommonHeader(subtitle = "Aventuras en: ${tripName ?: "Lugar"}") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
@@ -56,7 +57,8 @@ fun TripGalleryScreen(navController: NavController, tripName: String?) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(Photo.sampleData) { photo ->
+            val filteredPhotos = Photo.sampleData.filter { it.tripName == tripName }
+            items(filteredPhotos) { photo ->
                 PhotoCard(photo = photo, onClick = {
                     navController.navigate(Screen.GalleryDetail.createRoute(photo.id))
                 })

@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myapplication001.domain.model.Museum
+import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.navigation.Screen
 import com.example.myapplication001.ui.screens.museumlist.RatingDisplay
 import com.example.myapplication001.ui.theme.MyApplicationTheme
@@ -35,7 +36,7 @@ fun MuseumDetailScreen(navController: NavController, museumId: String?) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("PERUSTEAR") },
+                title = { CommonHeader(subtitle = museum.name) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
@@ -51,13 +52,6 @@ fun MuseumDetailScreen(navController: NavController, museumId: String?) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = museum.name,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(

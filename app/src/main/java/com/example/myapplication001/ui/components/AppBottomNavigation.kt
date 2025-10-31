@@ -21,6 +21,11 @@ fun AppBottomNavigation(navController: NavController) {
         val currentRoute = navBackStackEntry?.destination?.route
 
         bottomNavigationItems.forEach { screen ->
+            val isSelected = if (screen.route == Screen.Home.route) {
+                currentRoute == Screen.Home.route || currentRoute?.startsWith("active_tour") == true
+            } else {
+                currentRoute == screen.route
+            }
             NavigationBarItem(
                 icon = {
                     screen.icon?.let { icon ->
@@ -28,7 +33,7 @@ fun AppBottomNavigation(navController: NavController) {
                     }
                 },
                 label = { Text(screen.label) },
-                selected = currentRoute == screen.route,
+                selected = isSelected,
                 onClick = {
                     navController.navigate(screen.route) {
                         popUpTo(navController.graph.startDestinationId) {

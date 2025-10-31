@@ -19,6 +19,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication001.ui.components.AppBottomNavigation
+import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.navigation.Screen
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
@@ -28,7 +29,7 @@ fun HomeScreen(navController: NavController) {
     var userInsideMuseum by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("PERUSTEAR") }) },
+        topBar = { TopAppBar(title = { CommonHeader(subtitle = "Mapa de Museos: Arequipa") }) },
         bottomBar = { AppBottomNavigation(navController = navController) }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
@@ -36,7 +37,6 @@ fun HomeScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Mapa de Museos: Arequipa", style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(16.dp))
                 MapViewPlaceholder()
                 Spacer(modifier = Modifier.height(12.dp))

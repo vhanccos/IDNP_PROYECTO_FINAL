@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication001.domain.model.Event
 import com.example.myapplication001.ui.components.AppBottomNavigation
+import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,7 +27,7 @@ fun EventsScreen(navController: NavController) {
     var showNotificationCard by remember { mutableStateOf(true) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("EVENTOS Y NOTIFICACIONES") }) },
+        topBar = { TopAppBar(title = { CommonHeader(subtitle = "EVENTOS Y NOTIFICACIONES") }) },
         bottomBar = { AppBottomNavigation(navController = navController) }
     ) { paddingValues ->
         LazyColumn(

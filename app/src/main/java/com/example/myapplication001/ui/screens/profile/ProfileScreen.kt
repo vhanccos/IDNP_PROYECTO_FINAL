@@ -21,6 +21,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication001.domain.model.User
 import com.example.myapplication001.ui.components.AppBottomNavigation
+import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.navigation.Screen
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
@@ -29,7 +30,7 @@ import com.example.myapplication001.ui.theme.MyApplicationTheme
 fun ProfileScreen(navController: NavController) {
     val user = User.sample
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Cuenta, Información General") }) },
+        topBar = { TopAppBar(title = { CommonHeader(subtitle = "Cuenta, Información General") }) },
         bottomBar = { AppBottomNavigation(navController = navController) }
     ) {
         Column(

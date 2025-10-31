@@ -20,6 +20,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myapplication001.domain.model.Museum
 import com.example.myapplication001.ui.components.AppBottomNavigation
+import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,34 +28,40 @@ import com.example.myapplication001.ui.theme.MyApplicationTheme
 fun ActiveTourScreen(navController: NavController, museumId: String?) {
     val museum = Museum.sampleData.find { it.id == museumId } ?: return
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Recorrido en: ${museum.name}") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent, titleContentColor = Color.White, navigationIconContentColor = Color.White)
-            )
-        },
-        bottomBar = { AppBottomNavigation(navController = navController) }
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current).data(museum.imageUrl).crossfade(true).build(),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current).data(museum.imageUrl).crossfade(true).build(),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = { CommonHeader(subtitle = "Recorrido en: ${museum.name}") },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent, titleContentColor = Color.White, navigationIconContentColor = Color.White)
+                )
+            },
+            bottomBar = { AppBottomNavigation(navController = navController) }
+        ) { paddingValues ->
             Column(
-                modifier = Modifier.fillMaxSize().padding(it).padding(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Card(
-                    modifier = Modifier.align(Alignment.End).fillMaxWidth(0.6f),
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .fillMaxWidth(0.6f),
                     colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.6f))
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
