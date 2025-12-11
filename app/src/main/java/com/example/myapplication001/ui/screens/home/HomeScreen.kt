@@ -1,245 +1,228 @@
 package com.example.myapplication001.ui.screens.home
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import android.preference.PreferenceManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
 import com.example.myapplication001.ui.components.AppBottomNavigation
 import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.navigation.Screen
-import com.example.myapplication001.ui.theme.MyApplicationTheme
+// Imports de OpenStreetMap
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
-    var showPopup by remember { mutableStateOf(false) }
-    var activeMuseumName by remember { mutableStateOf("") }
+fun HomeScreen(
+    navController: NavController,
+    // Aquí inyectamos el ViewModel que creamos arriba (SIN repository)
+    viewModel: HomeViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    // Configuración obligatoria para OSM
+    LaunchedEffect(Unit) {
+        Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context))
+        Configuration.getInstance().userAgentValue = context.packageName
+    }
+
+    var mapController by remember { mutableStateOf<MapView?>(null) }
 
     Scaffold(
         topBar = {
-            CommonHeader(subtitle = "Mapa de Museos")
+            TopAppBar(
+                title = { CommonHeader(subtitle = "Mapa de Museos") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
         },
         bottomBar = {
             AppBottomNavigation(navController = navController)
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            // MAPA
+            AndroidView(
+                factory = { ctx ->
+                    MapView(ctx).apply {
+                        setTileSource(TileSourceFactory.MAPNIK)
+                        setMultiTouchControls(true)
+                        controller.setZoom(15.0)
 
-            // ===== Mapa simulado =====
-            SimulatedMap(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 16.dp),
-                onMuseumClick = { museum ->
-                    activeMuseumName = museum
-                    showPopup = true
+                        // Usamos la coordenada del ViewModel
+                        controller.setCenter(viewModel.arequipaCenterLocation)
+                        mapController = this
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+                update = { map ->
+                    map.overlays.clear()
+
+                    // Obtenemos la lista desde el ViewModel (que tiene los datos fijos)
+                    uiState.museums.forEach { museum ->
+                        // Pedimos la ubicación al ViewModel
+                        val location = viewModel.getMuseumLocation(museum.id)
+
+                        val marker = Marker(map)
+                        marker.position = location
+                        marker.title = museum.name
+                        marker.snippet = museum.infoText
+                        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+
+                        marker.setOnMarkerClickListener { m, _ ->
+                            m.showInfoWindow()
+                            viewModel.onMuseumClick(museum)
+                            true
+                        }
+                        map.overlays.add(marker)
+                    }
+                    map.invalidate()
                 }
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            AsyncImage(
-                model = "https://elcomercio.pe/resizer/qawe4AeUojGKnCAXmBURwQQN_IY=/1200x900/smart/filters:format(jpeg):quality(75)/arc-anglerfish-arc2-prod-elcomercio.s3.amazonaws.com/public/KSE6X4SNCVFG3JO6NRSM3IZECQ.jpg",
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp) 
-                    .padding(horizontal = 16.dp)
-            )
-
-            // ===== Texto guía y botón =====
+            // CONTROLES UI
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = "Escoger su museo favorito haciendo click en este icono",
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center
-                )
+                FloatingActionButton(
+                    onClick = {
+                        mapController?.controller?.animateTo(viewModel.arequipaCenterLocation)
+                        mapController?.controller?.setZoom(15.0)
+                    },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation,
+                        contentDescription = "Centrar mapa",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Toca un marcador para ver detalles",
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
                 Button(
                     onClick = { navController.navigate(Screen.MuseumList.route) },
                     modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .height(46.dp),
-                    shape = RoundedCornerShape(24.dp)
+                        .fillMaxWidth(0.7f)
+                        .height(50.dp),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Icon(imageVector = Icons.Filled.List, contentDescription = null)
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(text = "Lista de museos")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Ver Lista", fontWeight = FontWeight.Bold)
                 }
             }
+
+            if (uiState.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
         }
 
-        // ===== Popup =====
-        if (showPopup) {
-            MuseumPopup(
-                museumName = activeMuseumName,
-                onDismiss = { showPopup = false },
-                onEnter = {
-                    showPopup = false
-                    navController.navigate(Screen.ActiveTour.route)
+        // DIÁLOGO
+        if (uiState.showMuseumDialog && uiState.selectedMuseum != null) {
+            MuseumInfoDialog(
+                museum = uiState.selectedMuseum!!,
+                onDismiss = { viewModel.dismissMuseumDialog() },
+                onNavigateToDetail = {
+                    viewModel.dismissMuseumDialog()
+                    navController.navigate(Screen.MuseumDetail.createRoute(uiState.selectedMuseum!!.id))
+                },
+                onStartTour = {
+                    viewModel.dismissMuseumDialog()
+                    navController.navigate(Screen.ActiveTour.createRoute(uiState.selectedMuseum!!.id))
                 }
             )
         }
     }
 }
 
-/**
- * Simulación de un mapa con marcadores interactivos.
- */
 @Composable
-fun SimulatedMap(modifier: Modifier = Modifier, onMuseumClick: (String) -> Unit) {
-    val density = LocalDensity.current
-    val gridStepPx = with(density) { 40.dp.toPx() }
-    val gridColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+fun MuseumInfoDialog(
+    museum: com.example.myapplication001.domain.model.Museum,
+    onDismiss: () -> Unit,
+    onNavigateToDetail: () -> Unit,
+    onStartTour: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = museum.name, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(text = museum.description.take(150) + "...")
 
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center
-    ) {
-        // Fondo de cuadrícula tipo mapa
-        Canvas(modifier = Modifier.matchParentSize()) {
-            var x = 0f
-            while (x <= size.width) {
-                drawLine(gridColor, start = Offset(x, 0f), end = Offset(x, size.height), strokeWidth = 1f)
-                x += gridStepPx
-            }
-            var y = 0f
-            while (y <= size.height) {
-                drawLine(gridColor, start = Offset(0f, y), end = Offset(size.width, y), strokeWidth = 1f)
-                y += gridStepPx
-            }
-        }
+                // NOTA: Usamos HorizontalDivider que es el nuevo nombre de Divider
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-        // Marcadores fijos
-        Box(modifier = Modifier.fillMaxSize()) {
-            val markers = listOf(
-                Triple("Museo de Arte Virreinal", 0.25f, 0.4f),
-                Triple("Museo Santuarios Andinos", 0.6f, 0.6f),
-                Triple("Museo de la Catedral", 0.8f, 0.3f)
-            )
-
-            markers.forEach { (name, relX, relY) ->
-                RelativeMarker(
-                    name = name,
-                    relX = relX,
-                    relY = relY,
-                    onClick = onMuseumClick
-                )
-            }
-        }
-    }
-}
-
-/**
- * Coloca un marcador en posición relativa dentro de su padre.
- */
-@Composable
-fun RelativeMarker(name: String, relX: Float, relY: Float, onClick: (String) -> Unit) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val parentWidthDp = maxWidth
-        val parentHeightDp = maxHeight
-
-        val offsetXDp = (parentWidthDp * relX) - 26.dp
-        val offsetYDp = (parentHeightDp * relY) - 26.dp
-
-        Box(
-            modifier = Modifier
-                .offset(x = offsetXDp, y = offsetYDp)
-                .size(52.dp)
-                .clip(RoundedCornerShape(26.dp))
-                .background(MaterialTheme.colorScheme.primary)
-                .clickable { onClick(name) },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Place,
-                contentDescription = name,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(28.dp)
-            )
-        }
-    }
-}
-
-/** Popup para "Se encuentra adentro de:" */
-@Composable
-fun MuseumPopup(museumName: String, onDismiss: () -> Unit, onEnter: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(0.85f),
-            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(horizontal = 20.dp, vertical = 18.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Se encuentra adentro de:",
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = museumName,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                Button(
-                    onClick = onEnter,
-                    modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .height(44.dp),
-                    shape = RoundedCornerShape(20.dp)
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "Ingresar")
+                    Text(
+                        text = museum.infoText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (museum.infoText.contains("Abierto")) Color(0xFF4CAF50) else Color(0xFFF44336),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Row {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = null,
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${museum.ratingValue} (${museum.ratingCount})",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
+        },
+        confirmButton = {
+            Button(onClick = onNavigateToDetail) { Text("Ver Detalles") }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onStartTour) { Text("Iniciar Recorrido") }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    MyApplicationTheme {
-        HomeScreen(navController = rememberNavController())
-    }
+    )
 }
