@@ -14,15 +14,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.myapplication001.ui.navigation.Screen
-import com.example.myapplication001.ui.screens.active_tour.ActiveTourScreen
-import com.example.myapplication001.ui.screens.events.EventsScreen
-import com.example.myapplication001.ui.screens.gallery_detail.GalleryDetailScreen
-import com.example.myapplication001.ui.screens.home.HomeScreen
-import com.example.myapplication001.ui.screens.museumdetail.MuseumDetailScreen
-import com.example.myapplication001.ui.screens.museumlist.MuseumListScreen
-import com.example.myapplication001.ui.screens.profile.ProfileScreen
-import com.example.myapplication001.ui.screens.trip_gallery.TripGalleryScreen
-import com.example.myapplication001.ui.screens.triplist.TripListScreen
+import com.example.myapplication001.view.screens.active_tour.ActiveTourScreen
+import com.example.myapplication001.view.screens.events.EventsScreen
+import com.example.myapplication001.view.screens.gallery_detail.GalleryDetailScreen
+import com.example.myapplication001.view.screens.home.HomeScreen
+import com.example.myapplication001.view.screens.museumdetail.MuseumDetailScreen
+import com.example.myapplication001.view.screens.museumlist.MuseumListScreen
+import com.example.myapplication001.view.screens.profile.ProfileScreen
+import com.example.myapplication001.view.screens.trip_gallery.TripGalleryScreen
+import com.example.myapplication001.view.screens.triplist.TripListScreen
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {

@@ -1,6 +1,6 @@
 package com.example.myapplication001.data.api
 
-import com.example.myapplication001.domain.model.Museum
+import com.example.myapplication001.model.Museum
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
