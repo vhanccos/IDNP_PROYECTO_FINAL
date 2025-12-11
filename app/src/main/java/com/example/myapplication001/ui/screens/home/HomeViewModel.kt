@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-// IMPORTANTE: Usamos GeoPoint de OpenStreetMap
-import org.osmdroid.util.GeoPoint
+// IMPORTANTE: Aquí cambiamos a LatLng de Google Maps
+import com.google.android.gms.maps.model.LatLng
 
 data class HomeUiState(
     val museums: List<Museum> = emptyList(),
@@ -22,8 +22,8 @@ class HomeViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    // Coordenada Central (Plaza de Armas Arequipa)
-    val arequipaCenterLocation = GeoPoint(-16.3988, -71.5369)
+    // CORRECCIÓN 1: Usamos LatLng en lugar de GeoPoint
+    val arequipaCenterLocation = LatLng(-16.3988, -71.5369)
 
     init {
         loadMuseums()
@@ -33,26 +33,25 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
-            // AQUÍ ESTÁ LA CORRECCIÓN:
-            // Agregamos la 'f' a los números y los campos que faltaban (imageUrl, funFactTitle, funFactText)
+            // Datos quemados (Hardcoded)
             val localMuseums = listOf(
                 Museum(
                     id = "1",
                     name = "Museo Santa Teresa",
                     description = "Museo de arte virreinal en un convento del siglo XVIII.",
                     infoText = "Abierto - 9:00 AM",
-                    ratingValue = 4.8f, // AGREGADA LA 'f' (Float)
+                    ratingValue = 4.8f,
                     ratingCount = 120,
-                    imageUrl = "https://example.com/foto1.jpg", // CAMBIADO photoUrl POR imageUrl
-                    funFactTitle = "¿Sabías qué?", // AGREGADO
-                    funFactText = "Este museo fue un monasterio de clausura por más de 300 años." // AGREGADO
+                    imageUrl = "https://example.com/foto1.jpg",
+                    funFactTitle = "¿Sabías qué?",
+                    funFactText = "Este museo fue un monasterio de clausura por más de 300 años."
                 ),
                 Museum(
                     id = "2",
                     name = "Museo Santuarios Andinos",
                     description = "Hogar de la momia Juanita y artefactos incas.",
                     infoText = "Cerrado - Abre 10:00 AM",
-                    ratingValue = 4.6f, // AGREGADA LA 'f'
+                    ratingValue = 4.6f,
                     ratingCount = 340,
                     imageUrl = "https://example.com/foto2.jpg",
                     funFactTitle = "Dato Curioso",
@@ -63,7 +62,7 @@ class HomeViewModel : ViewModel() {
                     name = "Monasterio Santa Catalina",
                     description = "Una ciudadela dentro de la ciudad, arquitectura colonial.",
                     infoText = "Abierto - 8:00 AM",
-                    ratingValue = 4.9f, // AGREGADA LA 'f'
+                    ratingValue = 4.9f,
                     ratingCount = 1500,
                     imageUrl = "https://example.com/foto3.jpg",
                     funFactTitle = "Historia",
@@ -92,11 +91,12 @@ class HomeViewModel : ViewModel() {
         )
     }
 
-    fun getMuseumLocation(museumId: String): GeoPoint {
+    // CORRECCIÓN 2: La función devuelve LatLng
+    fun getMuseumLocation(museumId: String): LatLng {
         return when (museumId) {
-            "1" -> GeoPoint(-16.3950, -71.5360)
-            "2" -> GeoPoint(-16.4005, -71.5380)
-            "3" -> GeoPoint(-16.3952, -71.5367)
+            "1" -> LatLng(-16.3950, -71.5360) // Santa Teresa
+            "2" -> LatLng(-16.4005, -71.5380) // Santuarios Andinos
+            "3" -> LatLng(-16.3952, -71.5367) // Santa Catalina
             else -> arequipaCenterLocation
         }
     }
