@@ -1,6 +1,5 @@
 package com.example.myapplication001.ui.screens.home
 
-import android.preference.PreferenceManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -12,40 +11,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication001.ui.components.AppBottomNavigation
 import com.example.myapplication001.ui.components.CommonHeader
 import com.example.myapplication001.ui.navigation.Screen
-// Imports de OpenStreetMap
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
+// Imports de Google Maps
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.maps.android.compose.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
-    // Aquí inyectamos el ViewModel que creamos arriba (SIN repository)
     viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
 
-    // Configuración obligatoria para OSM
-    LaunchedEffect(Unit) {
-        Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context))
-        Configuration.getInstance().userAgentValue = context.packageName
+    // Configuración de la Cámara de Google Maps
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(viewModel.arequipaCenterLocation, 15f)
     }
-
-    var mapController by remember { mutableStateOf<MapView?>(null) }
 
     Scaffold(
         topBar = {
@@ -65,46 +54,41 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // MAPA
-            AndroidView(
-                factory = { ctx ->
-                    MapView(ctx).apply {
-                        setTileSource(TileSourceFactory.MAPNIK)
-                        setMultiTouchControls(true)
-                        controller.setZoom(15.0)
-
-                        // Usamos la coordenada del ViewModel
-                        controller.setCenter(viewModel.arequipaCenterLocation)
-                        mapController = this
-                    }
-                },
+            // --------------------------------------------------
+            // COMPONENTE GOOGLE MAPS
+            // --------------------------------------------------
+            GoogleMap(
                 modifier = Modifier.fillMaxSize(),
-                update = { map ->
-                    map.overlays.clear()
+                cameraPositionState = cameraPositionState,
+                properties = MapProperties(
+                    isMyLocationEnabled = false,
+                    mapType = MapType.NORMAL
+                ),
+                uiSettings = MapUiSettings(
+                    zoomControlsEnabled = false, // Ocultamos controles por defecto para usar los nuestros
+                    myLocationButtonEnabled = false,
+                    mapToolbarEnabled = false
+                )
+            ) {
+                // Dibujamos los marcadores (Pines Rojos por defecto)
+                uiState.museums.forEach { museum ->
+                    val position = viewModel.getMuseumLocation(museum.id)
 
-                    // Obtenemos la lista desde el ViewModel (que tiene los datos fijos)
-                    uiState.museums.forEach { museum ->
-                        // Pedimos la ubicación al ViewModel
-                        val location = viewModel.getMuseumLocation(museum.id)
-
-                        val marker = Marker(map)
-                        marker.position = location
-                        marker.title = museum.name
-                        marker.snippet = museum.infoText
-                        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-
-                        marker.setOnMarkerClickListener { m, _ ->
-                            m.showInfoWindow()
+                    Marker(
+                        state = MarkerState(position = position),
+                        title = museum.name,
+                        snippet = museum.infoText,
+                        onClick = {
                             viewModel.onMuseumClick(museum)
-                            true
+                            false // Devolver false para que ocurra el comportamiento por defecto (centrar y mostrar info)
                         }
-                        map.overlays.add(marker)
-                    }
-                    map.invalidate()
+                    )
                 }
-            )
+            }
 
-            // CONTROLES UI
+            // --------------------------------------------------
+            // CONTROLES UI (Botones Flotantes)
+            // --------------------------------------------------
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -112,10 +96,13 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Botón de centrar ubicación
                 FloatingActionButton(
                     onClick = {
-                        mapController?.controller?.animateTo(viewModel.arequipaCenterLocation)
-                        mapController?.controller?.setZoom(15.0)
+                        cameraPositionState.position = CameraPosition.fromLatLngZoom(
+                            viewModel.arequipaCenterLocation,
+                            15f
+                        )
                     },
                     containerColor = MaterialTheme.colorScheme.surface,
                     modifier = Modifier.size(56.dp)
@@ -127,14 +114,18 @@ fun HomeScreen(
                     )
                 }
 
+                // Texto guía
                 Text(
                     text = "Toca un marcador para ver detalles",
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 4.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .padding(bottom = 4.dp),
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
+                // Botón para ir a la lista
                 Button(
                     onClick = { navController.navigate(Screen.MuseumList.route) },
                     modifier = Modifier
@@ -145,35 +136,49 @@ fun HomeScreen(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = null)
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.List,
+                        contentDescription = null
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Ver Lista", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Ver Lista de Museos",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
+            // Indicador de carga
             if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
         }
 
-        // DIÁLOGO
+        // Diálogo de detalles del museo
         if (uiState.showMuseumDialog && uiState.selectedMuseum != null) {
             MuseumInfoDialog(
                 museum = uiState.selectedMuseum!!,
                 onDismiss = { viewModel.dismissMuseumDialog() },
                 onNavigateToDetail = {
                     viewModel.dismissMuseumDialog()
-                    navController.navigate(Screen.MuseumDetail.createRoute(uiState.selectedMuseum!!.id))
+                    navController.navigate(
+                        Screen.MuseumDetail.createRoute(uiState.selectedMuseum!!.id)
+                    )
                 },
                 onStartTour = {
                     viewModel.dismissMuseumDialog()
-                    navController.navigate(Screen.ActiveTour.createRoute(uiState.selectedMuseum!!.id))
+                    navController.navigate(
+                        Screen.ActiveTour.createRoute(uiState.selectedMuseum!!.id)
+                    )
                 }
             )
         }
     }
 }
 
+// Componente del Diálogo (Sin cambios, solo imports correctos)
 @Composable
 fun MuseumInfoDialog(
     museum: com.example.myapplication001.domain.model.Museum,
@@ -183,12 +188,22 @@ fun MuseumInfoDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = museum.name, fontWeight = FontWeight.Bold) },
+        title = {
+            Text(
+                text = museum.name,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(text = museum.description.take(150) + "...")
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = museum.description.take(150) + "...",
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
-                // NOTA: Usamos HorizontalDivider que es el nuevo nombre de Divider
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Row(
@@ -198,9 +213,14 @@ fun MuseumInfoDialog(
                     Text(
                         text = museum.infoText,
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (museum.infoText.contains("Abierto")) Color(0xFF4CAF50) else Color(0xFFF44336),
+                        color = if (museum.infoText.contains("Abierto")) {
+                            Color(0xFF4CAF50)
+                        } else {
+                            Color(0xFFF44336)
+                        },
                         fontWeight = FontWeight.Bold
                     )
+
                     Row {
                         Icon(
                             imageVector = Icons.Filled.Star,
@@ -219,10 +239,19 @@ fun MuseumInfoDialog(
             }
         },
         confirmButton = {
-            Button(onClick = onNavigateToDetail) { Text("Ver Detalles") }
+            Button(
+                onClick = onNavigateToDetail,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Ver Detalles")
+            }
         },
         dismissButton = {
-            OutlinedButton(onClick = onStartTour) { Text("Iniciar Recorrido") }
+            OutlinedButton(onClick = onStartTour) {
+                Text("Iniciar Recorrido")
+            }
         }
     )
 }
