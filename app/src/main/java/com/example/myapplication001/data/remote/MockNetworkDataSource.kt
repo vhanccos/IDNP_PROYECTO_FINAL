@@ -27,7 +27,7 @@ class MockNetworkDataSource : NetworkDataSource {
                 id = "2",
                 name = "Museo Santuarios Andinos",
                 description = "Hogar de la momia Juanita y artefactos incas.",
-                imageUrl = "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSyQtsPQE8thtVtQ1AkHPXgRPC4b5VAYOc13UYJ9i9-nmgpT0kMeuZhP2yPaxFgrcjVCmtAUiGq7bxH2YMSNYLfDPQ_CdRMWeblQpyUj6upFbZuIhks-ZY3E1l2Xy9cxUWbXc3WWDQ=w270-h312-n-k-no",
+                imageUrl = "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0b/05/38/d9/img-20160424-103448-largejpg.jpg",
                 ratingValue = 4.6f,
                 ratingCount = 340,
                 infoText = "Cerrado - Abre 10:00 AM",

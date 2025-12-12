@@ -115,7 +115,6 @@ fun MuseumDetailScreen(
                     fontWeight = FontWeight.Bold
                 ),
                 textAlign = TextAlign.Center,
-                color = Color.White,
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
 
@@ -304,21 +303,21 @@ fun MuseumInfoTabs(museum: Museum) {
                 0 -> Text(
                     "Información sobre la entrada no disponible.",
                     textAlign = TextAlign.Justify,
-                    color = Color(0xFFE0E0E0),
+                    //color = Color(0xFFE0E0E0),
                     fontSize = 14.sp,
                     lineHeight = 20.sp
                 )
                 1 -> Text(
                     museum.description,
                     textAlign = TextAlign.Justify,
-                    color = Color(0xFFE0E0E0),
+                    //color = Color(0xFFE0E0E0),
                     fontSize = 14.sp,
                     lineHeight = 20.sp
                 )
                 2 -> Text(
                     "Información general del museo no disponible.",
                     textAlign = TextAlign.Justify,
-                    color = Color(0xFFE0E0E0),
+                    //color = Color(0xFFE0E0E0),
                     fontSize = 14.sp,
                     lineHeight = 20.sp
                 )
