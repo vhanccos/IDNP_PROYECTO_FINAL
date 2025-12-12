@@ -2,6 +2,8 @@ package com.example.myapplication001.data.remote
 
 import com.example.myapplication001.data.local.entity.EventEntity
 import com.example.myapplication001.data.local.entity.MuseumEntity
+import com.example.myapplication001.data.local.entity.TripEntity
+import com.example.myapplication001.data.local.entity.PhotoEntity
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -31,5 +33,15 @@ class RetrofitNetworkDataSource(baseUrl: String) : NetworkDataSource {
 
     override suspend fun getEvents(): List<EventEntity> {
         return api.getEvents()
+    }
+
+    override suspend fun getTrips(): List<TripEntity> {
+        // TODO: Implement API call
+        return emptyList()
+    }
+
+    override suspend fun getPhotos(): List<PhotoEntity> {
+        // TODO: Implement API call
+        return emptyList()
     }
 }

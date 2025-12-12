@@ -214,9 +214,9 @@ fun MuseumInfoDialog(
                         text = museum.infoText,
                         style = MaterialTheme.typography.bodySmall,
                         color = if (museum.infoText.contains("Abierto")) {
-                            Color(0xFF4CAF50)
+                            MaterialTheme.colorScheme.tertiary
                         } else {
-                            Color(0xFFF44336)
+                            MaterialTheme.colorScheme.error
                         },
                         fontWeight = FontWeight.Bold
                     )
@@ -225,7 +225,7 @@ fun MuseumInfoDialog(
                         Icon(
                             imageVector = Icons.Filled.Star,
                             contentDescription = null,
-                            tint = Color(0xFFFFC107),
+                            tint = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))

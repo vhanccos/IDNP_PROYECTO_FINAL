@@ -20,6 +20,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -32,7 +35,19 @@ import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TripGalleryScreen(navController: NavController, tripName: String?) {
+fun TripGalleryScreen(
+    navController: NavController, 
+    tripName: String?,
+    viewModel: com.example.myapplication001.viewmodel.TripGalleryViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = com.example.myapplication001.viewmodel.TripGalleryViewModel.Factory)
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(tripName) {
+        if (tripName != null) {
+            viewModel.loadPhotos(tripName)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -51,20 +66,23 @@ fun TripGalleryScreen(navController: NavController, tripName: String?) {
             }
         }
     ) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .padding(it)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            val filteredPhotos = Photo.sampleData.filter { it.tripName == tripName }
-            items(filteredPhotos) { photo ->
-                PhotoCard(photo = photo, onClick = {
-                    navController.navigate(Screen.GalleryDetail.createRoute(photo.id))
-                })
+        Box(modifier = Modifier.padding(it).fillMaxSize()) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(uiState.photos) { photo ->
+                        PhotoCard(photo = photo, onClick = {
+                            navController.navigate(Screen.GalleryDetail.createRoute(photo.id))
+                        })
+                    }
+                }
             }
         }
     }
@@ -103,6 +121,7 @@ fun PhotoCard(photo: Photo, onClick: () -> Unit) {
             ) {
                 Text(
                     text = photo.timestamp,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = Color.White,
                     modifier = Modifier
                         .padding(8.dp)
@@ -110,6 +129,7 @@ fun PhotoCard(photo: Photo, onClick: () -> Unit) {
                 photo.timeHourStamp?.let {
                     Text(
                         text = it,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = Color.White,
                         modifier = Modifier
                             .padding(8.dp)

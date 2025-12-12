@@ -14,6 +14,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -25,8 +28,27 @@ import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActiveTourScreen(navController: NavController, museumId: String?) {
-    val museum = Museum.sampleData.find { it.id == museumId } ?: return
+fun ActiveTourScreen(
+    navController: NavController,
+    museumId: String?,
+    viewModel: com.example.myapplication001.viewmodel.ActiveTourViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = com.example.myapplication001.viewmodel.ActiveTourViewModel.Factory)
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(museumId) {
+        if (museumId != null) {
+            viewModel.loadMuseum(museumId)
+        }
+    }
+
+    if (uiState.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val museum = uiState.museum ?: return
 
     Box(modifier = Modifier.fillMaxSize()) {
         AsyncImage(
@@ -65,8 +87,8 @@ fun ActiveTourScreen(navController: NavController, museumId: String?) {
                     colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.6f))
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text(museum.funFactTitle, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text(museum.funFactText, color = Color.White)
+                        Text(museum.funFactTitle, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(museum.funFactText, style = MaterialTheme.typography.bodyMedium, color = Color.White)
                     }
                 }
 
@@ -77,7 +99,7 @@ fun ActiveTourScreen(navController: NavController, museumId: String?) {
                         .padding(12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Te encuentras en: ${museum.name}", color = Color.White)
+                    Text("Te encuentras en: ${museum.name}", style = MaterialTheme.typography.labelLarge, color = Color.White)
                 }
             }
         }

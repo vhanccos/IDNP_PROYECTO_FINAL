@@ -16,19 +16,47 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.myapplication001.model.Photo
 import com.example.myapplication001.view.components.AppBottomNavigation
 import com.example.myapplication001.view.components.CommonHeader
 import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GalleryDetailScreen(navController: NavController, photoId: String?) {
-    val photo = Photo.sampleData.find { it.id == photoId } ?: Photo.sampleData.first()
+fun GalleryDetailScreen(
+    navController: NavController,
+    photoId: String?,
+    viewModel: com.example.myapplication001.viewmodel.GalleryDetailViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = com.example.myapplication001.viewmodel.GalleryDetailViewModel.Factory)
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(photoId) {
+        if (photoId != null) {
+            viewModel.loadPhoto(photoId)
+        }
+    }
+
+    if (uiState.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val photo = uiState.photo
+    if (photo == null) {
+         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+             Text("Foto no encontrada", color = MaterialTheme.colorScheme.onSurface)
+         }
+         return
+    }
 
     Scaffold(
         topBar = {
@@ -42,9 +70,9 @@ fun GalleryDetailScreen(navController: NavController, photoId: String?) {
             )
         },
         bottomBar = { AppBottomNavigation(navController = navController) }
-    ) {
+    ) { paddingValues ->
         Box(
-            modifier = Modifier.padding(it).fillMaxSize().padding(16.dp),
+            modifier = Modifier.padding(paddingValues).fillMaxSize().padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             Box {
@@ -56,13 +84,13 @@ fun GalleryDetailScreen(navController: NavController, photoId: String?) {
                 )
                 Row(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
                     IconButton(onClick = { /*TODO*/ }) {
-                        Icon(Icons.Default.Download, contentDescription = "Descargar")
+                        Icon(Icons.Default.Download, contentDescription = "Descargar", tint = Color.White)
                     }
                     IconButton(onClick = { /*TODO*/ }) {
-                        Icon(Icons.Default.Share, contentDescription = "Compartir")
+                        Icon(Icons.Default.Share, contentDescription = "Compartir", tint = Color.White)
                     }
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.GridView, contentDescription = "Vista de Galería")
+                        Icon(Icons.Default.GridView, contentDescription = "Vista de Galería", tint = Color.White)
                     }
                 }
             }

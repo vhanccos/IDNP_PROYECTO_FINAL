@@ -23,25 +23,35 @@ import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventsScreen(navController: NavController) {
+fun EventsScreen(
+    navController: NavController,
+    viewModel: com.example.myapplication001.viewmodel.EventsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = com.example.myapplication001.viewmodel.EventsViewModel.Factory)
+) {
     var showNotificationCard by remember { mutableStateOf(true) }
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
     topBar = { TopAppBar(title = { CommonHeader(subtitle = "EVENTOS Y NOTIFICACIONES") }) },
         bottomBar = { AppBottomNavigation(navController = navController) }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier.padding(paddingValues).fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            if (showNotificationCard) {
-                item {
-                    NotificationCard { showNotificationCard = false }
+        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (showNotificationCard) {
+                        item {
+                            NotificationCard { showNotificationCard = false }
+                        }
+                    }
+                    items(uiState.events) { event ->
+                        EventCard(event = event)
+                    }
                 }
-            }
-            items(Event.sampleData) { event ->
-                EventCard(event = event)
             }
         }
     }

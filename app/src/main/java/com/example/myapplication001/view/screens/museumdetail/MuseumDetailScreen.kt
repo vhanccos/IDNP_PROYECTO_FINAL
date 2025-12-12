@@ -35,8 +35,34 @@ import com.example.myapplication001.view.screens.museumlist.RatingDisplay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MuseumDetailScreen(navController: NavController, museumId: String?) {
-    val museum = Museum.sampleData.find { it.id == museumId } ?: Museum.sampleData.first()
+fun MuseumDetailScreen(
+    navController: NavController,
+    museumId: String?,
+    viewModel: com.example.myapplication001.viewmodel.MuseumDetailViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = com.example.myapplication001.viewmodel.MuseumDetailViewModel.Factory)
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(museumId) {
+        if (museumId != null) {
+            viewModel.loadMuseum(museumId)
+        }
+    }
+
+    if (uiState.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val museum = uiState.museum
+    if (museum == null) {
+        // Show error or fallback
+         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+             Text("Museo no encontrado", color = Color.White)
+         }
+         return
+    }
 
     Scaffold(
         topBar = {
@@ -52,7 +78,7 @@ fun MuseumDetailScreen(navController: NavController, museumId: String?) {
                         Text(
                             text = buildAnnotatedString {
                                 append("Lista de Museos próximos en : ")
-                                withStyle(style = SpanStyle(color = Color(0xFFFF6B35))) {
+                                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                                     append("Arequipa")
                                 }
                             },
@@ -67,11 +93,11 @@ fun MuseumDetailScreen(navController: NavController, museumId: String?) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1C1C1C)
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
-        containerColor = Color(0xFF1C1C1C)
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -210,7 +236,7 @@ fun MuseumDetailScreen(navController: NavController, museumId: String?) {
                     .fillMaxWidth(0.6f)
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFF6B35)
+                    containerColor = MaterialTheme.colorScheme.primary
                 ),
                 shape = RoundedCornerShape(25.dp)
             ) {

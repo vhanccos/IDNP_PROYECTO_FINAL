@@ -21,6 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -32,7 +34,12 @@ import com.example.myapplication001.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MuseumListScreen(navController: NavController) {
+fun MuseumListScreen(
+    navController: NavController,
+    viewModel: com.example.myapplication001.viewmodel.MuseumListViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = com.example.myapplication001.viewmodel.MuseumListViewModel.Factory)
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -55,17 +62,24 @@ fun MuseumListScreen(navController: NavController) {
         }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-            Text(text = "Lista de Museos proximos en : ", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-            Text(text = "Arequipa", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), style = MaterialTheme.typography.headlineSmall, color = Color.Blue)
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                items(Museum.sampleData) { museum ->
-                    MuseumListItem(museum = museum, onClick = {
-                        navController.navigate(Screen.MuseumDetail.createRoute(museum.id))
-                    })
+            Text(text = "Lista de Museos proximos en : ", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Arequipa", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
+            
+            if (uiState.isLoading) {
+                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                     CircularProgressIndicator()
+                 }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    items(uiState.museums) { museum ->
+                        MuseumListItem(museum = museum, onClick = {
+                            navController.navigate(Screen.MuseumDetail.createRoute(museum.id))
+                        })
+                    }
                 }
             }
         }
@@ -100,7 +114,7 @@ fun MuseumListItem(museum: Museum, onClick: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = museum.infoText, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                    Text(text = museum.infoText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     RatingDisplay(value = museum.ratingValue, count = museum.ratingCount)
                 }
             }
@@ -111,10 +125,10 @@ fun MuseumListItem(museum: Museum, onClick: () -> Unit) {
 @Composable
 fun RatingDisplay(value: Float, count: Int) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Filled.Star, contentDescription = "Rating", tint = Color(0xFFFFC107))
+        Icon(Icons.Filled.Star, contentDescription = "Rating", tint = MaterialTheme.colorScheme.tertiary)
         Spacer(Modifier.width(4.dp))
         Text(text = "$value", fontWeight = FontWeight.Bold)
-        Text(text = " ($count)", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        Text(text = " ($count)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
