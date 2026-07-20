@@ -59,7 +59,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
+    implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.navigation:navigation-compose:2.8.3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.coil-kt:coil-compose:2.6.0")
@@ -78,15 +78,25 @@ dependencies {
     // ViewModel y LiveData
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+    // Firebase - ya tienes firestore, agregar estos:
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+
+    // Para notificaciones locales con compatibilidad API 24+
+    implementation("androidx.core:core-ktx:1.13.1")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     implementation("org.osmdroid:osmdroid-android:6.1.18")
-
+// WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
+
+    // Accompanist for permissions (NUEVO)
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 }

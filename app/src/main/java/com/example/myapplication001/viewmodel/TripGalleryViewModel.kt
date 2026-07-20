@@ -5,17 +5,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.myapplication001.model.Photo
-
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import com.example.myapplication001.data.repository.UserDataRepository
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.myapplication001.MyApplication
+import java.text.SimpleDateFormat
+import java.util.*
 
 data class TripGalleryUiState(
     val isLoading: Boolean = false,
-    val photos: List<Photo> = emptyList()
+    val photos: List<Photo> = emptyList(),
+    val currentTripName: String = ""
 )
 
 class TripGalleryViewModel(private val repository: UserDataRepository) : ViewModel() {
@@ -24,13 +26,13 @@ class TripGalleryViewModel(private val repository: UserDataRepository) : ViewMod
 
     fun loadPhotos(tripName: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            // Trigger refresh logic if needed, but for now just observe
-            // Since photos might come from API in future, we might call refreshPhotos() here if it was by trip,
-            // but refreshPhotos() currently gets ALL photos. Let's assume we just observe for now.
-            // Actually, we should try to refresh if list is empty.
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                currentTripName = tripName
+            )
+
             if (_uiState.value.photos.isEmpty()) {
-                 repository.refreshPhotos() 
+                repository.refreshPhotos()
             }
 
             repository.getPhotosByTrip(tripName).collect { entities ->
@@ -50,7 +52,22 @@ class TripGalleryViewModel(private val repository: UserDataRepository) : ViewMod
             }
         }
     }
-    
+
+    fun addPhoto(imageUri: String) {
+        viewModelScope.launch {
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val currentDate = Date()
+
+            repository.addPhoto(
+                tripName = _uiState.value.currentTripName,
+                imageUrl = imageUri,
+                timestamp = dateFormat.format(currentDate),
+                timeHourStamp = timeFormat.format(currentDate)
+            )
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")

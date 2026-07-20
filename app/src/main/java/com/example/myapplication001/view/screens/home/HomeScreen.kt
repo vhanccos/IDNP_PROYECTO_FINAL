@@ -1,25 +1,33 @@
 package com.example.myapplication001.view.screens.home
 
+import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.myapplication001.model.Museum
+import com.example.myapplication001.ui.navigation.Screen
 import com.example.myapplication001.view.components.AppBottomNavigation
 import com.example.myapplication001.view.components.CommonHeader
-import com.example.myapplication001.ui.navigation.Screen
-// Imports de Google Maps
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.*
 
@@ -31,7 +39,6 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Configuración de la Cámara de Google Maps
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(viewModel.arequipaCenterLocation, 15f)
     }
@@ -45,18 +52,14 @@ fun HomeScreen(
                 )
             )
         },
-        bottomBar = {
-            AppBottomNavigation(navController = navController)
-        }
+        bottomBar = { AppBottomNavigation(navController = navController) }
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // --------------------------------------------------
-            // COMPONENTE GOOGLE MAPS
-            // --------------------------------------------------
+            // ── Google Maps ───────────────────────────────────────────────
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
@@ -65,98 +68,231 @@ fun HomeScreen(
                     mapType = MapType.NORMAL
                 ),
                 uiSettings = MapUiSettings(
-                    zoomControlsEnabled = false, // Ocultamos controles por defecto para usar los nuestros
+                    zoomControlsEnabled = false,
                     myLocationButtonEnabled = false,
                     mapToolbarEnabled = false
                 )
             ) {
-                // Dibujamos los marcadores (Pines Rojos por defecto)
                 uiState.museums.forEach { museum ->
                     val position = viewModel.getMuseumLocation(museum.id)
-
                     Marker(
                         state = MarkerState(position = position),
                         title = museum.name,
                         snippet = museum.infoText,
                         onClick = {
                             viewModel.onMuseumClick(museum)
-                            false // Devolver false para que ocurra el comportamiento por defecto (centrar y mostrar info)
+                            false
                         }
                     )
                 }
             }
 
-            // --------------------------------------------------
-            // CONTROLES UI (Botones Flotantes)
-            // --------------------------------------------------
+            // ── Chip contador de museos (arriba izquierda) ────────────────
+            AnimatedVisibility(
+                visible = uiState.museums.isNotEmpty(),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp),
+                enter = fadeIn() + slideInVertically(),
+                exit = fadeOut()
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                    shadowElevation = 4.dp
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Place,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = "${uiState.museums.size} museos cercanos",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+
+            // ── Controles inferiores ───────────────────────────────────────
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(16.dp),
+                    .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Botón de centrar ubicación
-                FloatingActionButton(
-                    onClick = {
-                        cameraPositionState.position = CameraPosition.fromLatLngZoom(
-                            viewModel.arequipaCenterLocation,
-                            15f
-                        )
-                    },
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier.size(56.dp)
+                // Botón centrar mapa alineado a la derecha
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.MyLocation,
-                        contentDescription = "Centrar mapa",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    FloatingActionButton(
+                        onClick = {
+                            cameraPositionState.position = CameraPosition.fromLatLngZoom(
+                                viewModel.arequipaCenterLocation, 15f
+                            )
+                        },
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(48.dp),
+                        elevation = FloatingActionButtonDefaults.elevation(6.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.MyLocation,
+                            contentDescription = "Centrar mapa",
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                 }
 
-                // Texto guía
-                Text(
-                    text = "Toca un marcador para ver detalles",
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
+                // Panel inferior con gradiente
+                Box(
                     modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .padding(bottom = 4.dp),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                // Botón para ir a la lista
-                Button(
-                    onClick = { navController.navigate(Screen.MuseumList.route) },
-                    modifier = Modifier
-                        .fillMaxWidth(0.7f)
-                        .height(50.dp),
-                    shape = RoundedCornerShape(25.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
+                                    MaterialTheme.colorScheme.surface
+                                )
+                            )
+                        )
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.List,
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Ver Lista de Museos",
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Drag handle visual
+                        Box(
+                            modifier = Modifier
+                                .width(36.dp)
+                                .height(4.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                    RoundedCornerShape(2.dp)
+                                )
+                        )
+                        Spacer(Modifier.height(12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    "Arequipa, Perú",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    "Ciudad Blanca",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            }
+                            // Chip de estado
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color(0xFF2E7D32).copy(alpha = 0.12f)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(7.dp)
+                                            .background(Color(0xFF2E7D32), RoundedCornerShape(4.dp))
+                                    )
+                                    Spacer(Modifier.width(5.dp))
+                                    Text(
+                                        "En vivo",
+                                        color = Color(0xFF2E7D32),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Text(
+                            text = "Toca un marcador del mapa para ver detalles del museo",
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(Modifier.height(14.dp))
+
+                        // Botón ver lista
+                        Button(
+                            onClick = { navController.navigate(Screen.MuseumList.route) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(4.dp)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.List,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                "Ver Lista de Museos",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        }
+                    }
                 }
             }
 
-            // Indicador de carga
-            if (uiState.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
+            // ── Loading ────────────────────────────────────────────────────
+            AnimatedVisibility(
+                visible = uiState.isLoading,
+                modifier = Modifier.align(Alignment.Center),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                    shadowElevation = 8.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            "Cargando museos...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         }
 
-        // Diálogo de detalles del museo
+        // ── Diálogo de museo mejorado ──────────────────────────────────────
         if (uiState.showMuseumDialog && uiState.selectedMuseum != null) {
             MuseumInfoDialog(
                 museum = uiState.selectedMuseum!!,
@@ -178,62 +314,154 @@ fun HomeScreen(
     }
 }
 
-// Componente del Diálogo (Sin cambios, solo imports correctos)
 @Composable
 fun MuseumInfoDialog(
-    museum: com.example.myapplication001.model.Museum,
+    museum: Museum,
     onDismiss: () -> Unit,
     onNavigateToDetail: () -> Unit,
     onStartTour: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = museum.name,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        },
+        shape = RoundedCornerShape(20.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = null,
         text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = museum.description.take(150) + "...",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
+            Column {
+                // Imagen del museo dentro del diálogo
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .clip(RoundedCornerShape(14.dp))
                 ) {
-                    Text(
-                        text = museum.infoText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (museum.infoText.contains("Abierto")) {
-                            MaterialTheme.colorScheme.tertiary
-                        } else {
-                            MaterialTheme.colorScheme.error
-                        },
-                        fontWeight = FontWeight.Bold
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(museum.imageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = museum.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
-
-                    Row {
-                        Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
+                    // Gradiente sobre la imagen para el texto
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)),
+                                    startY = 80f
+                                )
+                            )
+                    )
+                    // Badge de estado sobre la imagen
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (museum.infoText.startsWith("Abierto"))
+                            Color(0xFF2E7D32).copy(alpha = 0.9f)
+                        else
+                            Color(0xFFC62828).copy(alpha = 0.9f)
+                    ) {
                         Text(
-                            text = "${museum.ratingValue} (${museum.ratingCount})",
-                            style = MaterialTheme.typography.bodySmall,
+                            text = museum.infoText,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            color = Color.White,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
+                    }
+                    // Nombre del museo sobre la imagen
+                    Text(
+                        text = museum.name,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(12.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                }
+
+                Spacer(Modifier.height(14.dp))
+
+                // Descripción
+                Text(
+                    text = museum.description.take(130) + "...",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 18.sp
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                // Rating y reseñas
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        repeat(5) { index ->
+                            Icon(
+                                Icons.Default.Star,
+                                contentDescription = null,
+                                tint = if (index < museum.ratingValue.toInt())
+                                    Color(0xFFFFD700)
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            "${museum.ratingValue}",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    Text(
+                        "${museum.ratingCount} reseñas",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                // Dato curioso
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(10.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            Icons.Default.Lightbulb,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                museum.funFactTitle,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                museum.funFactText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                lineHeight = 16.sp
+                            )
+                        }
                     }
                 }
             }
@@ -241,15 +469,23 @@ fun MuseumInfoDialog(
         confirmButton = {
             Button(
                 onClick = onNavigateToDetail,
+                shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                Text("Ver Detalles")
+                Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Ver Detalles", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            OutlinedButton(onClick = onStartTour) {
+            OutlinedButton(
+                onClick = onStartTour,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.PlayCircle, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
                 Text("Iniciar Recorrido")
             }
         }

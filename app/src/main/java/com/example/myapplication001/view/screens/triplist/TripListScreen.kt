@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -52,28 +54,38 @@ fun TripListScreen(
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color.White
+                            color = Color.Black
                         )
                         Text(
                             text = "Mis Aventuras",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White,
+                            color = Color.Gray,
                             fontSize = 14.sp
                         )
                     }
                 },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color.Black
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1C1C1C)
+                    containerColor = Color.White
                 )
             )
         },
         bottomBar = { AppBottomNavigation(navController = navController) },
-        containerColor = Color.Black
+        containerColor = Color.White
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .background(Color.White),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -100,7 +112,7 @@ fun TripListScreen(
 
             Text(
                 text = "Escoger su museo favorito haciendo click en este icono",
-                color = Color.White,
+                color = Color.Gray,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -120,7 +132,7 @@ fun TripCard(trip: Trip, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF2A2A2A)
+            containerColor = Color.White
         )
     ) {
         Column {
@@ -139,7 +151,7 @@ fun TripCard(trip: Trip, onClick: () -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF1C1C1C))
+                    .background(Color(0xFFF5F5F5))
                     .padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -147,7 +159,7 @@ fun TripCard(trip: Trip, onClick: () -> Unit) {
                     text = trip.name,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    color = Color.White,
+                    color = Color.Black,
                     fontSize = 13.sp,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -155,7 +167,7 @@ fun TripCard(trip: Trip, onClick: () -> Unit) {
                     text = trip.description,
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    color = Color(0xFFB0B0B0),
+                    color = Color(0xFF666666),
                     fontSize = 11.sp,
                     modifier = Modifier.fillMaxWidth()
                 )

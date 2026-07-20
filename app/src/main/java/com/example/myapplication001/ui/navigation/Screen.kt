@@ -26,6 +26,7 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector?
     }
 }
 
+// Menú inferior: Eventos → Inicio → Perfil (igual que el original)
 val bottomNavigationItems = listOf(
     Screen.Events,
     Screen.Home,

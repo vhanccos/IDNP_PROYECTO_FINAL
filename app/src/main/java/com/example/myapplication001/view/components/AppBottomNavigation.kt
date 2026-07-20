@@ -22,7 +22,8 @@ fun AppBottomNavigation(navController: NavController) {
 
         bottomNavigationItems.forEach { screen ->
             val isSelected = if (screen.route == Screen.Home.route) {
-                currentRoute == Screen.Home.route || currentRoute?.startsWith("active_tour") == true
+                currentRoute == Screen.Home.route ||
+                        currentRoute?.startsWith("active_tour") == true
             } else {
                 currentRoute == screen.route
             }

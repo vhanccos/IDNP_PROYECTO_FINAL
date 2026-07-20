@@ -20,21 +20,37 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication001.model.User
-import com.example.myapplication001.view.components.AppBottomNavigation
-import com.example.myapplication001.view.components.CommonHeader
 import com.example.myapplication001.ui.navigation.Screen
 import com.example.myapplication001.ui.theme.MyApplicationTheme
+import com.example.myapplication001.view.components.AppBottomNavigation
+import com.example.myapplication001.view.components.CommonHeader
+import com.example.myapplication001.viewmodel.ThemeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(
+    navController: NavController,
+    themeViewModel: ThemeViewModel          // ← recibe el ViewModel
+) {
     val user = User.sample
     Scaffold(
-        topBar = { TopAppBar(title = { CommonHeader(subtitle = "Cuenta, Información General") }) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    CommonHeader(
+                        subtitle = "Cuenta, Información General",
+                        themeViewModel = themeViewModel   // ← pasa al header
+                    )
+                }
+            )
+        },
         bottomBar = { AppBottomNavigation(navController = navController) }
     ) {
         Column(
-            modifier = Modifier.padding(it).fillMaxSize().padding(16.dp),
+            modifier = Modifier
+                .padding(it)
+                .fillMaxSize()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ProfileHeader(user)
@@ -61,7 +77,7 @@ fun ProfileScreen(navController: NavController) {
 fun ProfileHeader(user: User) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Image(
-            painter = rememberVectorPainter(Icons.Default.Person), // Placeholder
+            painter = rememberVectorPainter(Icons.Default.Person),
             contentDescription = "Avatar",
             modifier = Modifier
                 .size(100.dp)
@@ -95,9 +111,9 @@ fun SettingsCard() {
             Text("Configuración", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(16.dp))
             SettingsItem("Notificación", "Activar")
-            Divider()
+            HorizontalDivider()
             SettingsItem("Ubicación", "Permitir")
-            Divider()
+            HorizontalDivider()
             SettingsItem("Idioma", "Español")
         }
     }
@@ -105,18 +121,24 @@ fun SettingsCard() {
 
 @Composable
 fun SettingsItem(label: String, buttonText: String) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(label, modifier = Modifier.weight(1f))
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = { }) {
             Text(buttonText)
         }
     }
 }
 
+// Preview no puede instanciar AndroidViewModel, se omite el toggle en preview
 @Preview(showBackground = true)
 @Composable
 fun ProfileScreenPreview() {
     MyApplicationTheme {
-        ProfileScreen(rememberNavController())
+        // Preview sin themeViewModel — solo para visualizar layout
     }
 }

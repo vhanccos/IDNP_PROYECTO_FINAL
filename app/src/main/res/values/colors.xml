@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- Colores base del tema oscuro -->
+    <color name="background_dark">#1A1A1A</color>
+    <color name="surface_dark">#2C2C2C</color>
+    <color name="surface_card">#242424</color>
+    <color name="navbar_dark">#000000</color>
+
+    <!-- Acento principal naranja (del mockup) -->
+    <color name="primary_orange">#FF6600</color>
+    <color name="primary_orange_dark">#CC5200</color>
+
+    <!-- Textos -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="text_hint">#666666</color>
+
+    <!-- Tabs -->
+    <color name="tab_active">#FF6600</color>
+    <color name="tab_inactive">#888888</color>
+
+    <!-- Otros -->
+    <color name="star_color">#FFD700</color>
+    <color name="divider">#333333</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

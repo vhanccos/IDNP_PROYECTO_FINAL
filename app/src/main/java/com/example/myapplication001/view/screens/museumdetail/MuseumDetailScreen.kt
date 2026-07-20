@@ -216,7 +216,15 @@ fun MuseumDetailScreen(
             ) {
                 RatingDisplay(value = museum.ratingValue, count = museum.ratingCount)
             }
+            Spacer(modifier = Modifier.height(12.dp))
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .padding(horizontal = 8.dp)
+            ) {
+                com.example.myapplication001.view.components.WeatherCard(cityName = "Arequipa")
+            }
             Spacer(modifier = Modifier.height(20.dp))
 
             // Tabs rediseñadas

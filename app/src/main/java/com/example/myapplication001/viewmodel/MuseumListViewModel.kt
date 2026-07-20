@@ -1,56 +1,64 @@
 package com.example.myapplication001.viewmodel
 
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import com.example.myapplication001.model.Museum
-
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
-import com.example.myapplication001.data.repository.MuseumRepository
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.myapplication001.MyApplication
+import com.example.myapplication001.data.repository.MuseumRepository
+import com.example.myapplication001.data.repository.SyncResult
+import com.example.myapplication001.model.Museum
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 data class MuseumListUiState(
     val isLoading: Boolean = false,
-    val museums: List<Museum> = emptyList()
+    val museums: List<Museum> = emptyList(),
+    val isOffline: Boolean = false,             // ← nuevo
+    val syncResult: SyncResult = SyncResult.Idle // ← nuevo
 )
 
 class MuseumListViewModel(private val repository: MuseumRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow(MuseumListUiState())
-    val uiState: StateFlow<MuseumListUiState> = _uiState.asStateFlow()
+
+    val uiState: StateFlow<MuseumListUiState> = combine(
+        repository.museums,
+        repository.networkMonitor.isOnline,
+        repository.syncResult
+    ) { entities, isOnline, syncResult ->
+        // Mismo mapeo entity→Museum que tenías antes
+        val museums = entities.map { entity ->
+            Museum(
+                id = entity.id,
+                name = entity.name,
+                description = entity.description,
+                imageUrl = entity.imageUrl,
+                ratingValue = entity.ratingValue,
+                ratingCount = entity.ratingCount,
+                infoText = entity.infoText,
+                funFactTitle = entity.funFactTitle,
+                funFactText = entity.funFactText
+            )
+        }
+        MuseumListUiState(
+            museums = museums,
+            isLoading = syncResult is SyncResult.Syncing && museums.isEmpty(),
+            isOffline = !isOnline,
+            syncResult = syncResult
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = MuseumListUiState(isLoading = true)
+    )
 
     init {
-        loadMuseums()
+        sync()
     }
 
-    private fun loadMuseums() {
+    // Llamado desde el botón de reintento en la UI
+    fun sync() {
         viewModelScope.launch {
-             _uiState.value = _uiState.value.copy(isLoading = true)
-             // Ensure data is fresh (or just rely on what HomeViewModel might have loaded? Better to refresh/ensure)
-             repository.refreshMuseums()
-             
-             repository.museums.collect { entities ->
-                 val museums = entities.map { entity ->
-                    Museum(
-                        id = entity.id,
-                        name = entity.name,
-                        description = entity.description,
-                        imageUrl = entity.imageUrl,
-                        ratingValue = entity.ratingValue,
-                        ratingCount = entity.ratingCount,
-                        infoText = entity.infoText,
-                        funFactTitle = entity.funFactTitle,
-                        funFactText = entity.funFactText
-                    )
-                 }
-                 _uiState.value = _uiState.value.copy(
-                     museums = museums,
-                     isLoading = false
-                 )
-             }
+            repository.syncAll()
         }
     }
 
@@ -61,7 +69,9 @@ class MuseumListViewModel(private val repository: MuseumRepository) : ViewModel(
                 modelClass: Class<T>,
                 extras: CreationExtras
             ): T {
-                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+                val application = checkNotNull(
+                    extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
+                )
                 val repository = (application as MyApplication).museumRepository
                 return MuseumListViewModel(repository) as T
             }
